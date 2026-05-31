@@ -262,6 +262,11 @@ $(call soong_config_set,lineage_health,fast_charge_value_none,0)
 $(call soong_config_set,lineage_health,fast_charge_value_fast_charge,1)
 $(call soong_config_set,lineage_health,fast_charge_value_super_fast_charge,2)
 
+# Debloat
+PRODUCT_PACKAGES += \
+    RemovePackagesPeridot
+
+
 # Logging
 SPAMMY_LOG_TAGS_S := \
     ache \
