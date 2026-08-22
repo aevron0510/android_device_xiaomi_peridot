@@ -487,3 +487,6 @@ $(call inherit-product-if-exists, device/xiaomi/peridot-miuicamera/device.mk)
 
 #Viper4Android
 $(call inherit-product-if-exists, packages/apps/ViPER4AndroidFX/config.mk)
+
+# NotGameTurbo
+$(call inherit-product-if-exists, packages/apps/NotGameTurbo/notgameturbo.mk)
