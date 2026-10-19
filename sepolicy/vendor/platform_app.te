@@ -1,0 +1,26 @@
+# Allow platform_app to execute vendor blobs it maps from its data dir
+# (MiCam loads its Leica/AI algorithm plugins this way)
+allow platform_app vendor_file:file { read open getattr map execute };
+typeattribute platform_app system_executes_vendor_violators;
+allow platform_app app_data_file:file execute;
+
+# Camera
+binder_call(platform_app, hal_camera_default)
+allow platform_app hal_aidlbgservice_service:service_manager find;
+allow platform_app hal_camera_mivi_hwservice:hwservice_manager find;
+allow platform_app vendor_hal_camerapostproc_xiaomi_hwservice:hwservice_manager find;
+binder_call(platform_app, vendor_hal_camerapostproc_xiaomi)
+
+# PSI stats (MiCam adaptive perf)
+allow platform_app proc_pressure_cpu:file rw_file_perms;
+allow platform_app proc_pressure_io:file rw_file_perms;
+allow platform_app proc_pressure_mem:file rw_file_perms;
+
+get_prop(platform_app, vendor_audio_prop)
+get_prop(platform_app, vendor_camera_prop)
+get_prop(platform_app, vendor_camera_sensor_prop)
+get_prop(platform_app, vendor_camera_p3enable_prop)
+get_prop(platform_app, vendor_displayfeature_prop)
+get_prop(platform_app, vendor_display_prop)
+get_prop(platform_app, vendor_fp_prop)
+get_prop(platform_app, vendor_panel_info_prop)
