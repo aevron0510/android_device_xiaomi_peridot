@@ -122,6 +122,7 @@ debug.sf.earlyGl.sf.duration.90=15111111
 debug.sf.earlyGl.sf.duration=10500000
 debug.sf.enable_gl_backpressure=1
 debug.sf.enable_transaction_tracing=false
+debug.sf.enable_egl_image_tracker=0
 debug.sf.frame_rate_multiple_threshold=120
 debug.sf.hw=0
 debug.sf.late.app.duration.120=11666666
