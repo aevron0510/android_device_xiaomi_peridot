@@ -462,6 +462,8 @@ on property:persist.vendor.qcomsysd.enabled=0
     stop qcomsysd
 
 service vendor.ssr_setup /system/vendor/bin/ssr_setup
+    user system
+    group system
     oneshot
     disabled
 
@@ -500,14 +502,10 @@ on property:persist.vendor.ssr.restart_level=*
     start vendor.ssr_setup
 
 on property:persist.vendor.ssr.enable_ramdumps=1
-    write /sys/module/subsystem_restart/parameters/enable_ramdumps 1
-    write /sys/module/qcom_ramdump/parameters/enable_dump_collection 1
+    chown system system /sys/module/qcom_ramdump/parameters/enable_dump_collection
+    chmod 0660 /sys/module/qcom_ramdump/parameters/enable_dump_collection
     mkdir /data/vendor/ramdump_ssr 770 system system
     start vendor.ss_ramdump
-
-on property:persist.vendor.ssr.enable_ramdumps=0
-    write /sys/module/subsystem_restart/parameters/enable_ramdumps 0
-    write /sys/module/qcom_ramdump/parameters/enable_dump_collection 0
 
 on property:persist.vendor.sys.rawdump_copy=1
     write /sys/kernel/dload/emmc_dload 1
@@ -549,11 +547,6 @@ on property:vendor.media.target.version=*
 on property:vendor.media.target_variant=*
     setprop ro.media.xml_variant.codecs ${vendor.media.target_variant}
     setprop ro.media.xml_variant.codecs_performance ${vendor.media.target_variant}
-
-service qcom-c_core-sh  /vendor/bin/init.qcom.class_core.sh
-    class core
-    user root
-    oneshot
 
 service qcom-c_main-sh /vendor/bin/init.class_main.sh
     class main
@@ -740,6 +733,7 @@ service qti-testscripts /system/bin/sh /product/etc/init.qcom.testscripts.sh
 
 service wifi-sdio-on /vendor/bin/init.qcom.sdio.sh
     class late_start
+    user wifi
     group wifi inet
     disabled
     oneshot
@@ -820,15 +814,6 @@ service diag_mdlog_stop /system/vendor/bin/diag_mdlog -k
     disabled
     oneshot
 
-service qlogd /system/xbin/qlogd
-    socket qlogd stream 0662 system system
-    class main
-    disabled
-on property:persist.sys.qlogd=1
-    start qlogd
-on property:persist.sys.qlogd=0
-    stop qlogd
-
 service vm_bms /vendor/bin/vm_bms
     user root
     group root
@@ -894,12 +879,6 @@ service poweroffhandler /system/vendor/bin/poweroffhandler
     disabled
     oneshot
 
-service time_daemon /vendor/bin/time_daemon
-    class main
-    user system
-    group system
-    capabilities SYS_TIME
-
 # Set vendor-ril lib path based on Meta version
 on property:vendor.rild.libpath=*
     setprop rild.libpath ${vendor.rild.libpath}
@@ -909,7 +888,9 @@ on property:ro.vendor.radio.noril=*
 
 service vendor.power_off_alarm /vendor/bin/power_off_alarm
     class core
+    user system
     group system
+    capabilities WAKE_ALARM
     disabled
     oneshot
 
@@ -932,6 +913,7 @@ on property:vendor.chre.enabled=0
 
 service bugreport /system/bin/dumpstate -d -p -B -z -o /data/user_de/0/com.android.shell/files/bugreports/bugreport
     class main
+    user root
     disabled
     oneshot
     keycodes 114 115 116

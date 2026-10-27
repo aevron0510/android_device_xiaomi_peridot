@@ -113,8 +113,6 @@ on early-boot
 
 on boot
     write /dev/cpuset/audio-app/cpus 0-1
-    # Enable suspend to RAM
-    write /sys/power/mem_sleep "deep"
     # Add a cpuset for the camera daemon
     # We want all cores for camera
     mkdir /dev/cpuset/camera-daemon
@@ -212,3 +210,9 @@ service fan_control_turn_off /vendor/bin/fan_service 0
     user root
     disabled
     oneshot
+
+    # Only owner can acces this node
+    chmod 440 /proc/net/unix
+
+    # Enable suspend to RAM
+    write /sys/power/mem_sleep "deep"
