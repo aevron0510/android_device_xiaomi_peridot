@@ -19,7 +19,41 @@ on early-init
     # set tcp_mtu_probing to 1
     write /proc/sys/net/ipv4/tcp_mtu_probing 1
 
+    # DRM
     chown system graphics /sys/class/drm/card0/device/power/control
+
+    # CPU DMA latency
+    chown root system /dev/cpu_dma_latency
+    chmod 0664 /dev/cpu_dma_latency
+
+    # Top-app uclamp
+    chown root system /dev/cpuctl/top-app/cpu.uclamp.latency_sensitive
+    chown root system /dev/cpuctl/top-app/cpu.uclamp.min
+    chown root system /dev/cpuctl/top-app/cpu.uclamp.max
+    chmod 0664 /dev/cpuctl/top-app/cpu.uclamp.latency_sensitive
+    chmod 0664 /dev/cpuctl/top-app/cpu.uclamp.min
+    chmod 0664 /dev/cpuctl/top-app/cpu.uclamp.max
+
+    # Core control
+    chown root system /sys/devices/system/cpu/cpu0/core_ctl/enable
+    chown root system /sys/devices/system/cpu/cpu3/core_ctl/enable
+    chown root system /sys/devices/system/cpu/cpu7/core_ctl/enable
+
+    chown root system /sys/devices/system/cpu/cpu0/core_ctl/min_cpus
+    chown root system /sys/devices/system/cpu/cpu3/core_ctl/min_cpus
+    chown root system /sys/devices/system/cpu/cpu7/core_ctl/min_cpus
+
+    chmod 0664 /sys/devices/system/cpu/cpu0/core_ctl/enable
+    chmod 0664 /sys/devices/system/cpu/cpu3/core_ctl/enable
+    chmod 0664 /sys/devices/system/cpu/cpu7/core_ctl/enable
+
+    chmod 0664 /sys/devices/system/cpu/cpu0/core_ctl/min_cpus
+    chmod 0664 /sys/devices/system/cpu/cpu3/core_ctl/min_cpus
+    chmod 0664 /sys/devices/system/cpu/cpu7/core_ctl/min_cpus
+
+    # Foreground uclamp
+    chown root system /dev/cpuctl/foreground/cpu.uclamp.min
+    chmod 0664 /dev/cpuctl/foreground/cpu.uclamp.min
 
 on boot
     restorecon /sys/devices/soc0/subset_parts
@@ -113,6 +147,19 @@ on boot
     chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/screen
     chmod 0666 /dev/input/event2
 
+    # CPU-Sets
+    chown root system /dev/cpuset/cgroup.procs
+    chown root system /dev/cpuset/foreground/cgroup.procs
+    chown root system /dev/cpuset/background/cgroup.procs
+    chown root system /dev/cpuset/system-background/cgroup.procs
+    chown root system /dev/cpuset/top-app/cgroup.procs
+
+    chmod 0664 /dev/cpuset/cgroup.procs
+    chmod 0664 /dev/cpuset/foreground/cgroup.procs
+    chmod 0664 /dev/cpuset/background/cgroup.procs
+    chmod 0664 /dev/cpuset/system-background/cgroup.procs
+    chmod 0664 /dev/cpuset/top-app/cgroup.procs
+
 on charger
     chown system system /sys/class/backlight/panel0-backlight/brightness
     write /sys/devices/system/cpu/qcom_lpm/parameters/sleep_disabled n
@@ -123,9 +170,9 @@ on charger
 on init
     chmod 0666 /dev/uhid
     mkdir /dev/cpuctl/misc
-    chown system system /dev/cpuctl/misc
-    chown system system /dev/cpuctl/misc/tasks
-    chown system system /dev/cpuctl/misc/cgroup.procs
+    chown root system /dev/cpuctl/misc
+    chown root system /dev/cpuctl/misc/tasks
+    chown root system /dev/cpuctl/misc/cgroup.procs
     chmod 0664 /dev/cpuctl/misc/cgroup.procs
     chmod 0664 /dev/cpuctl/misc/tasks
     mkdir /dev/cpuset/small-window
@@ -226,15 +273,126 @@ on property:vendor.post_boot.parsed=1
     # Disable vblank IRQ immediately after turning off
     write /sys/module/drm/parameters/vblankoffdelay -1
 
+    # Setup runtime cpus
+    write /dev/cpuset/background/cpus 0-1
+    write /dev/cpuset/restricted/cpus 0-2
+    write /dev/cpuset/foreground/cpus 0-6
+    write /dev/cpuset/foreground_window/cpus 0-6
+    write /dev/cpuset/system-background/cpus 0-2
+    write /dev/cpuset/top-app/cpus 0-7
+
+    # Configure uclamp
+    write /dev/cpuctl/top-app/cpu.uclamp.latency_sensitive 1
+    write /dev/cpuctl/nnapi-hal/cpu.uclamp.latency_sensitive 1
+
+    # uclamp.max
+    write /dev/cpuctl/background/cpu.uclamp.max 30
+    write /dev/cpuctl/system-background/cpu.uclamp.max 40
+    write /dev/cpuctl/dex2oat/cpu.uclamp.max 70
+
+    # cpu.shares
+    write /dev/cpuctl/top-app/cpu.shares 4096
+    write /dev/cpuctl/foreground/cpu.shares 3072
+    write /dev/cpuctl/system/cpu.shares 3072
+    write /dev/cpuctl/camera-daemon/cpu.shares 3072
+    write /dev/cpuctl/nnapi-hal/cpu.shares 2048
+    write /dev/cpuctl/system-background/cpu.shares 768
+    write /dev/cpuctl/background/cpu.shares 512
+    write /dev/cpuctl/dex2oat/cpu.shares 512
+
+    # CPUSets
+    setprop dalvik.vm.dex2oat-cpu-set 0,1,2,3,4,5,6
+    setprop dalvik.vm.dex2oat-threads 6
+
+    # Memory Tuning
+    write /proc/sys/vm/dirty_writeback_centisecs 1000
+    write /proc/sys/vm/dirty_ratio 20
+    write /proc/sys/vm/dirty_background_ratio 10
+    write /proc/sys/vm/swappiness 60
+
 on property:sys.boot_completed=1
+    chown root system /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq
+    chown root system /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq
+    chown root system /sys/devices/system/cpu/cpufreq/policy3/scaling_max_freq
+    chown root system /sys/devices/system/cpu/cpufreq/policy3/scaling_min_freq
+    chown root system /sys/devices/system/cpu/cpufreq/policy7/scaling_max_freq
+    chown root system /sys/devices/system/cpu/cpufreq/policy7/scaling_min_freq
+
+    chmod 0664 /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq
+    chmod 0664 /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq
+    chmod 0664 /sys/devices/system/cpu/cpufreq/policy3/scaling_max_freq
+    chmod 0664 /sys/devices/system/cpu/cpufreq/policy3/scaling_min_freq
+    chmod 0664 /sys/devices/system/cpu/cpufreq/policy7/scaling_max_freq
+    chmod 0664 /sys/devices/system/cpu/cpufreq/policy7/scaling_min_freq
+
+    chown root system /sys/class/kgsl/kgsl-3d0/devfreq/max_freq
+    chown root system /sys/class/kgsl/kgsl-3d0/devfreq/min_freq
+    chown root system /sys/class/kgsl/kgsl-3d0/idle_timer
+
+    chmod 0664 /sys/class/kgsl/kgsl-3d0/devfreq/max_freq
+    chmod 0664 /sys/class/kgsl/kgsl-3d0/devfreq/min_freq
+    chmod 0664 /sys/class/kgsl/kgsl-3d0/idle_timer
+
+    chown root system /proc/sys/kernel/sched_util_clamp_min_rt_default
+    chmod 0664 /proc/sys/kernel/sched_util_clamp_min_rt_default
+
+    chown root system /sys/block/sda/queue/scheduler
+    chmod 0664 /sys/block/sda/queue/scheduler
+    chown root system /sys/block/sda/queue/read_ahead_kb
+    chmod 0664 /sys/block/sda/queue/read_ahead_kb
+
     write /dev/kmsg "start qrtr-lookup after Boot completed "
     start qrtr-lookup
+
+    # Congestion + queue
+    write /proc/sys/net/core/default_qdisc fq
+    write /proc/sys/net/ipv4/tcp_congestion_control bbr
+
+    # Fast connection setup
+    write /proc/sys/net/ipv4/tcp_fastopen 3
+
+    # Stability + latency
+    write /proc/sys/net/ipv4/tcp_slow_start_after_idle 0
+    write /proc/sys/net/ipv4/tcp_no_metrics_save 1
+
+    # Buffers
+    write /proc/sys/net/core/rmem_max 16777216
+    write /proc/sys/net/core/wmem_max 16777216
+    write /proc/sys/net/ipv4/tcp_rmem 4096 87380 16777216
+    write /proc/sys/net/ipv4/tcp_wmem 4096 65536 16777216
+
+    # Keepalive
+    write /proc/sys/net/ipv4/tcp_keepalive_time 600
+    write /proc/sys/net/ipv4/tcp_keepalive_intvl 30
+    write /proc/sys/net/ipv4/tcp_keepalive_probes 5
+    write /proc/sys/net/core/netdev_max_backlog 5000
+
+    # Safe connection retries
+    write /proc/sys/net/ipv4/tcp_syn_retries 4
+    write /proc/sys/net/ipv4/tcp_synack_retries 3
+
+    # Reliability features
+    write /proc/sys/net/ipv4/tcp_timestamps 1
+    write /proc/sys/net/ipv4/tcp_sack 1
+    write /proc/sys/net/ipv4/tcp_ecn 1
+    write /proc/sys/net/ipv4/tcp_syncookies 1
+    write /proc/sys/net/ipv4/tcp_fin_timeout 15
+    write /proc/sys/net/ipv4/tcp_tw_reuse 1
+    write /proc/sys/net/ipv6/conf/all/use_tempaddr 2
+    write /proc/sys/net/ipv6/conf/default/use_tempaddr 2
 
     # for online boot cpu
     wait /sys/class/thermal/thermal_message/boot_complete
     write /sys/class/thermal/thermal_message/boot_complete 2
 
+    # Optimize vfs cache pressure
+    write /proc/sys/vm/vfs_cache_pressure 50
 
+    # Disable zram readahead
+    write /proc/sys/vm/page-cluster 0
+
+    # Restrict unbound kernel workqueues to Little cores (0-2)
+    write /sys/devices/virtual/workqueue/cpumask 7
 
     # Enable Bypass Node To be Toggleable
     chown system system /sys/class/qcom-battery/bypass_charging_enable

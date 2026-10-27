@@ -126,9 +126,13 @@ if [ -d /proc/sys/walt ]; then
 	# Turn off scheduler boost at the end
 	echo 0 > /proc/sys/walt/sched_boost
 
+        # Game Sched Tuning
+        echo "UnityMain,libunity.so,libil2cpp.so,libxlua.so,libUE4.so,libUnreal.so,libAlienIsolation.so,libTombRaider.so" > /proc/sys/walt/sched_lib_name
+        echo 248 > /proc/sys/walt/sched_lib_mask_force
+
 	# configure input boost settings
-	echo 1113600 0 0 0 0 0 0 0 > /proc/sys/walt/input_boost/input_boost_freq
-	echo 120 > /proc/sys/walt/input_boost/input_boost_ms
+	echo 787200 0 0 0 0 0 0 0 > /proc/sys/walt/input_boost/input_boost_freq
+	echo 0 > /proc/sys/walt/input_boost/input_boost_ms
 
 	echo "walt" > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
 	echo "walt" > /sys/devices/system/cpu/cpufreq/policy3/scaling_governor
@@ -165,7 +169,6 @@ fi
 	echo 595200 > /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq
 	echo 633600 > /sys/devices/system/cpu/cpufreq/policy3/scaling_min_freq
 	echo 633600 > /sys/devices/system/cpu/cpufreq/policy7/scaling_min_freq
-	echo "0:595200 3:633600 7:633600" > /data/vendor/perfd/default_scaling_min_freq
 
 # Reset the RT boost, which is 1024 (max) by default.
 echo 0 > /proc/sys/kernel/sched_util_clamp_min_rt_default
