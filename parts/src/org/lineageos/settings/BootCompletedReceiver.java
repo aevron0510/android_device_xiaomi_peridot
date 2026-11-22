@@ -25,8 +25,6 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Display.HdrCapabilities;
 
-import org.lineageos.settings.charge.BypassChargingUtils;
-
 public class BootCompletedReceiver extends BroadcastReceiver {
     private static final boolean DEBUG = false;
     private static final String TAG = "XiaomiParts";
@@ -56,8 +54,6 @@ public class BootCompletedReceiver extends BroadcastReceiver {
 
     private void handleBootCompleted(Context context) {
         if (DEBUG) Log.i(TAG, "Handling boot completed.");
-        // Bypass charging thermal mode (kernel resets to its default each boot)
-        BypassChargingUtils.restoreMode(context);
     }
 
     private void overrideHdrTypes(Context context) {

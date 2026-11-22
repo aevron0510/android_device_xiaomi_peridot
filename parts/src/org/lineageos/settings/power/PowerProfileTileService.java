@@ -27,7 +27,6 @@ import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
-
 import org.lineageos.settings.R;
 import org.lineageos.settings.utils.FileUtils;
 
@@ -40,11 +39,11 @@ public class PowerProfileTileService extends TileService {
     private static final String SYS_PERF_PROP = "sys.perf_mode_active";
     private static final int NOTIFICATION_ID_POWER_MODE = 1001;
 
-    private enum PowerProfile {
-        DEFAULT(0, R.string.powerprofile_default, R.drawable.ic_power_default, "1"),
+    public enum PowerProfile {
+        BALANCED(0, R.string.powerprofile_balanced, R.drawable.ic_power_default, "1"),
         BATTERY(1, R.string.powerprofile_battery, R.drawable.ic_power_battery_saver, "0"),
-        ULTIMATE(6, R.string.powerprofile_ultimate, R.drawable.ic_power_ultimate, "2"),
-        BOOST(18, R.string.powerprofile_boost, R.drawable.ic_power_boost, "3"),
+        PERFORMANCE(19, R.string.powerprofile_performance, R.drawable.ic_power_performance, "2"),
+        EXTREME(6, R.string.powerprofile_extreme, R.drawable.ic_power_extreme, "3"),
         UNKNOWN(-1, R.string.powerprofile_unknown, R.drawable.ic_power_default, "1");
 
         private final int value;
@@ -73,12 +72,12 @@ public class PowerProfileTileService extends TileService {
 
         public PowerProfile getNext() {
             switch (this) {
-                case DEFAULT: return BATTERY;
-                case BATTERY: return ULTIMATE;
-                case ULTIMATE: return BOOST;
-                case BOOST:
+                case BALANCED: return BATTERY;
+                case BATTERY: return PERFORMANCE;
+                case PERFORMANCE: return EXTREME;
+                case EXTREME:
                 case UNKNOWN:
-                default: return DEFAULT;
+                default: return BALANCED;
             }
         }
     }
@@ -107,8 +106,8 @@ public class PowerProfileTileService extends TileService {
 
         // Check if this is first boot
         if (isFirstBoot()) {
-            Log.i(TAG, "First boot detected, setting to DEFAULT profile");
-            applyProfile(PowerProfile.DEFAULT);
+            Log.i(TAG, "First boot detected, setting to BALANCED profile");
+            applyProfile(PowerProfile.BALANCED);
         } else {
             PowerProfile current = getCurrentProfile();
             PowerProfile saved = getSavedProfile();
@@ -117,8 +116,8 @@ public class PowerProfileTileService extends TileService {
                 Log.d(TAG, "Reboot detected, restoring saved profile: " + saved);
                 applyProfile(saved);
             } else if (current == PowerProfile.UNKNOWN) {
-                Log.w(TAG, "Unknown profile detected, falling back to DEFAULT");
-                applyProfile(PowerProfile.DEFAULT);
+                Log.w(TAG, "Unknown profile detected, falling back to BALANCED");
+                applyProfile(PowerProfile.BALANCED);
             } else {
                 updateTileState(current, true);
             }
@@ -207,12 +206,6 @@ public class PowerProfileTileService extends TileService {
      * (e.g. PowerProfileSettingsFragment). Performs the same sysfs/sysprop/
      * battery-saver/notification work as applyProfile() above, but works even
      * when the tile has never been bound this boot.
-     *
-     * TileService.requestListeningState() does NOT guarantee onStartListening()
-     * runs — most SystemUI forks only honor it while the tile is actually
-     * visible, i.e. QS pulled down. Relying on it to apply the change meant
-     * nothing happened until QS was opened. This does the real work directly,
-     * then requestListeningState() is just a best-effort visual refresh.
      */
     public static void applyProfileExternally(Context context, int profileValue) {
         PowerProfile profile = PowerProfile.fromValue(profileValue);
@@ -241,11 +234,12 @@ public class PowerProfileTileService extends TileService {
                 setBatterySaverExternally(context, saverCurrentlyOn, !isCharging);
                 cancelPowerModeNotificationExternally(context);
                 break;
-            case ULTIMATE:
-            case BOOST:
+            case PERFORMANCE:
+            case EXTREME:
                 setBatterySaverExternally(context, saverCurrentlyOn, false);
                 showPowerModeNotificationExternally(context, profile);
                 break;
+            case BALANCED:
             default:
                 setBatterySaverExternally(context, saverCurrentlyOn, false);
                 cancelPowerModeNotificationExternally(context);
@@ -253,8 +247,7 @@ public class PowerProfileTileService extends TileService {
         }
 
         // Best-effort: refreshes the tile's icon/label immediately if QS
-        // happens to be open right now. Not required for the profile change
-        // itself to take effect anymore.
+        // happens to be open right now.
         TileService.requestListeningState(context,
                 new ComponentName(context, PowerProfileTileService.class));
 
@@ -285,9 +278,9 @@ public class PowerProfileTileService extends TileService {
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        int contentTextResId = profile == PowerProfile.BOOST
-                ? R.string.boost_mode_notification
-                : R.string.ultimate_mode_notification;
+        int contentTextResId = profile == PowerProfile.EXTREME
+                ? R.string.extreme_mode_notification
+                : R.string.perf_mode_notification;
 
         Notification notification = new Notification.Builder(context, TAG)
                 .setContentTitle(context.getString(profile.getNameResId()))
@@ -307,7 +300,7 @@ public class PowerProfileTileService extends TileService {
 
     private static void ensureNotificationChannelExternally(Context context, NotificationManager nm) {
         NotificationChannel channel = new NotificationChannel(
-                TAG, context.getString(R.string.ultimate_mode_title), NotificationManager.IMPORTANCE_DEFAULT);
+                TAG, context.getString(R.string.perf_mode_title), NotificationManager.IMPORTANCE_DEFAULT);
         channel.setBlockable(true);
         nm.createNotificationChannel(channel);
     }
@@ -341,19 +334,16 @@ public class PowerProfileTileService extends TileService {
                 if (!isCharging) {
                     setBatterySaver(true);
                 } else {
-                    setBatterySaver(false); // Disable battery saver if charging
+                    setBatterySaver(false);
                 }
                 cancelPowerModeNotification();
                 break;
-            case ULTIMATE:
-            case BOOST:
-                setBatterySaver(false); // Always disable battery saver for ULTIMATE
+            case PERFORMANCE:
+            case EXTREME:
+                setBatterySaver(false);
                 showPowerModeNotification(profile);
                 break;
-            case DEFAULT:
-                setBatterySaver(false);
-                cancelPowerModeNotification();
-                break;
+            case BALANCED:
             default:
                 setBatterySaver(false);
                 cancelPowerModeNotification();
@@ -398,7 +388,7 @@ public class PowerProfileTileService extends TileService {
     private void setupNotificationChannel() {
         NotificationChannel channel = new NotificationChannel(
             TAG, 
-            getString(R.string.ultimate_mode_title),
+            getString(R.string.perf_mode_title),
             NotificationManager.IMPORTANCE_DEFAULT
         );
         channel.setBlockable(true);
@@ -413,9 +403,9 @@ public class PowerProfileTileService extends TileService {
             this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
-        int contentTextResId = profile == PowerProfile.BOOST
-                ? R.string.boost_mode_notification
-                : R.string.ultimate_mode_notification;
+        int contentTextResId = profile == PowerProfile.EXTREME
+                ? R.string.extreme_mode_notification
+                : R.string.perf_mode_notification;
 
         Notification notification = new Notification.Builder(this, TAG)
             .setContentTitle(getString(profile.getNameResId()))
@@ -443,7 +433,7 @@ public class PowerProfileTileService extends TileService {
                     getContentResolver(), Settings.Global.LOW_POWER_MODE, 0) == 1;
 
                 PowerProfile current = getCurrentProfile();
-                if (isBatterySaverOn && !isCharging() && current != PowerProfile.ULTIMATE && current != PowerProfile.BOOST) {
+                if (isBatterySaverOn && !isCharging() && current != PowerProfile.PERFORMANCE && current != PowerProfile.EXTREME) {
                     if (current != PowerProfile.BATTERY) {
                         Log.d(TAG, "Battery saver enabled, switching to battery profile");
                         applyProfile(PowerProfile.BATTERY);
@@ -454,8 +444,8 @@ public class PowerProfileTileService extends TileService {
                         Log.d(TAG, "Battery saver disabled, restoring previous profile: " + prevProfile);
                         applyProfile(prevProfile);
                     } else {
-                        Log.d(TAG, "Battery saver disabled, switching to DEFAULT");
-                        applyProfile(PowerProfile.DEFAULT);
+                        Log.d(TAG, "Battery saver disabled, switching to BALANCED");
+                        applyProfile(PowerProfile.BALANCED);
                     }
                 }
             }
@@ -477,9 +467,9 @@ public class PowerProfileTileService extends TileService {
     }
 
     private PowerProfile getSavedProfile() {
-        if (mSharedPrefs == null) return PowerProfile.DEFAULT;
+        if (mSharedPrefs == null) return PowerProfile.BALANCED;
         
-        int savedValue = mSharedPrefs.getInt(POWER_PROFILE_PREF_KEY, PowerProfile.DEFAULT.getValue());
+        int savedValue = mSharedPrefs.getInt(POWER_PROFILE_PREF_KEY, PowerProfile.BALANCED.getValue());
         return PowerProfile.fromValue(savedValue);
     }
 
@@ -492,9 +482,9 @@ public class PowerProfileTileService extends TileService {
     }
 
     private PowerProfile getPreviousProfile() {
-        if (mSharedPrefs == null) return PowerProfile.DEFAULT;
+        if (mSharedPrefs == null) return PowerProfile.BALANCED;
         
-        int prevValue = mSharedPrefs.getInt(PREV_POWER_PROFILE_PREF_KEY, PowerProfile.DEFAULT.getValue());
+        int prevValue = mSharedPrefs.getInt(PREV_POWER_PROFILE_PREF_KEY, PowerProfile.BALANCED.getValue());
         return PowerProfile.fromValue(prevValue);
     }
 

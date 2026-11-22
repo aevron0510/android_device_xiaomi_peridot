@@ -16,7 +16,6 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
-
     <!-- Xiaomi Settings -->
     <string name="app_title">Xiaomi Settings</string>
     <string name="tile_add">Add tile</string>
@@ -26,22 +25,23 @@
     <string name="tile_on">On</string>
     <string name="tile_off">Off</string>
 
-     <!-- Power Profile tiles-->
+    <!-- Power Profile tiles-->
     <string name="powerprofile_title">Power Profile</string>
-    <string name="powerprofile_default">Default</string>
-    <string name="powerprofile_ultimate">Ultimate Mode</string>
-    <string name="powerprofile_boost">Boost Mode</string>
-    <string name="powerprofile_battery">Battery Saver</string>
+    <string name="powerprofile_balanced">Balanced</string>
+    <string name="powerprofile_battery">Battery</string>
+    <string name="powerprofile_performance">Performance</string>
+    <string name="powerprofile_extreme">Extreme</string>
     <string name="powerprofile_unknown">Unknown</string>
     <string name="powerprofile_summary">Choose a system performance profile</string>
 
-     <!-- Ultimate / Boost Mode Notification -->
-     <string name="ultimate_mode_title">Ultimate Mode</string>
-     <string name="ultimate_mode_notification">Ultimate mode is active. Tap to open settings.</string>
-     <string name="boost_mode_notification">Boost mode is active. Tap to open settings.</string>
+    <!-- Performance / Extreme Mode Notification -->
+    <string name="perf_mode_title">Performance Mode</string>
+    <string name="perf_mode_notification">Performance mode is active. Tap to open settings.</string>
+    <string name="extreme_mode_title">Extreme Mode</string>
+    <string name="extreme_mode_notification">Extreme mode is active. Tap to open settings.</string>
 
-     <!-- Tile Disabled -->
-     <string name="power_tile_disabled_subtitle">Disabled</string>
+    <!-- Tile Disabled -->
+    <string name="power_tile_disabled_subtitle">Disabled</string>
 
     <!-- Charge Control -->
     <string name="charge_tile_title">Charge Control</string>
@@ -52,13 +52,8 @@
     <string name="bypass_charging_summary_pending">Switching…</string>
     <string name="bypass_charging_summary_unavailable">Not supported on this kernel</string>
     <string name="bypass_charging_tile_label">Bypass Chg</string>
-    <string name="bypass_mode_title">Bypass thermal mode</string>
-    <string name="bypass_mode_locked">%1$s — turn bypass off to change</string>
-    <string name="bypass_mode_navigation">Navigation</string>
-    <string name="bypass_mode_tgame">TGame</string>
-    <string name="bypass_mode_nolimit">No limit</string>
-    <string name="charge_mode_ok">OK</string>
-    <string name="charge_mode_cool">Cool</string>
-    <string name="charge_mode_nuke">Nuke</string>
+    <string name="charge_mode_slow">Slow</string>
+    <string name="charge_mode_fast">Fast</string>
+    <string name="charge_mode_turbo">Turbo</string>
 
 </resources>

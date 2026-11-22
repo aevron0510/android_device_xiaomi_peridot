@@ -16,11 +16,19 @@
 
 package org.lineageos.settings.charge;
 
+import android.graphics.drawable.Icon;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 
+import org.lineageos.settings.R;
+
 public class ChargeTileService extends TileService {
-    private static final String[] LABELS = {"OK", "COOL", "NUKE"};
+    private static final String[] LABELS = {"Slow", "Fast", "Turbo"};
+    private static final int[] ICONS = {
+        R.drawable.ic_charge_slow,
+        R.drawable.ic_charge_fast,
+        R.drawable.ic_charge_turbo
+    };
 
     @Override
     public void onClick() {
@@ -39,8 +47,8 @@ public class ChargeTileService extends TileService {
         if (tile != null) {
             int mode = ChargeModeUtils.getMode();
             tile.setLabel(LABELS[mode]);
-            tile.setState(mode == ChargeModeUtils.MODE_OK ? Tile.STATE_INACTIVE
-                                                          : Tile.STATE_ACTIVE);
+            tile.setIcon(Icon.createWithResource(this, ICONS[mode]));
+            tile.setState(Tile.STATE_ACTIVE);
             tile.updateTile();
         }
     }

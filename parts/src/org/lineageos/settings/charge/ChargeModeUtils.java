@@ -22,17 +22,19 @@ public final class ChargeModeUtils {
 
     public static final String PROP = "persist.sys.charge.mode";
 
-    public static final int MODE_OK = 0;
-    public static final int MODE_COOL = 1;
-    public static final int MODE_NUKE = 2;
+    public static final int MODE_SLOW = 0;
+    public static final int MODE_FAST = 1;
+    public static final int MODE_TURBO = 2;
     public static final int MODE_COUNT = 3;
+
+    public static final int MODE_DEFAULT = MODE_SLOW;
 
     private ChargeModeUtils() {
     }
 
     public static int getMode() {
-        int mode = SystemProperties.getInt(PROP, MODE_OK);
-        return (mode >= 0 && mode < MODE_COUNT) ? mode : MODE_OK;
+        int mode = SystemProperties.getInt(PROP, MODE_DEFAULT);
+        return (mode >= 0 && mode < MODE_COUNT) ? mode : MODE_DEFAULT;
     }
 
     public static void setMode(int mode) {
