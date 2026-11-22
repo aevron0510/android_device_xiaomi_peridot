@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2025 The Android Open Source Project
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <!-- Charge mode -->
+    <string-array name="charge_mode_entries">
+        <item>@string/charge_mode_ok</item>
+        <item>@string/charge_mode_cool</item>
+        <item>@string/charge_mode_nuke</item>
+    </string-array>
+    <string-array name="bypass_mode_entries">
+        <item>@string/bypass_mode_navigation</item>
+        <item>@string/bypass_mode_tgame</item>
+        <item>@string/bypass_mode_nolimit</item>
+    </string-array>
+    <!-- Must match the names in bypass_modes[] in the kernel driver -->
+    <string-array name="bypass_mode_values">
+        <item>navigation</item>
+        <item>tgame</item>
+        <item>nolimit</item>
+    </string-array>
+    <string-array name="charge_mode_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <!-- Power profile. Values must match PowerProfileTileService.PowerProfile#getValue() -->
+    <string-array name="power_profile_entries">
+        <item>@string/powerprofile_default</item>
+        <item>@string/powerprofile_battery</item>
+        <item>@string/powerprofile_ultimate</item>
+        <item>@string/powerprofile_boost</item>
+    </string-array>
+    <string-array name="power_profile_values">
+        <item>0</item>
+        <item>1</item>
+        <item>6</item>
+        <item>18</item>
+    </string-array>
+
+</resources>
