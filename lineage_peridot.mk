@@ -8,6 +8,24 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit_only.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 
+# Lunch banner maintainer variable
+RISING_MAINTAINER="MrJellyXD"
+RISING_MAINTAINER := MrJellyXD
+
+# Enable blur support
+TARGET_ENABLE_BLUR := true
+
+# Ship aperture camera
+PRODUCT_NO_CAMERA := true
+
+# UDFPS
+TARGET_HAS_UDFPS := true
+EXTRA_UDFPS_ANIMATIONS := true
+
+# GMS
+WITH_GMS := true
+TARGET_USES_PICO_GAPPS := true
+
 # Inherit some common Lineage stuff.
 $(call inherit-product, vendor/lineage/config/common_full_phone.mk)
 
@@ -23,10 +41,13 @@ PRODUCT_MODEL := 24069PC21G
 PRODUCT_SYSTEM_NAME := peridot_global
 PRODUCT_SYSTEM_DEVICE := peridot
 
+# Chipset/Maintainer properties
 PRODUCT_BUILD_PROP_OVERRIDES += \
     BuildDesc="peridot_global-user 16 BP2A.250605.031.A3 OS3.0.6.0.WNPMIXM release-keys" \
     BuildFingerprint=POCO/peridot_global/peridot:16/BP2A.250605.031.A3/OS3.0.6.0.WNPMIXM:user/release-keys \
     DeviceName=$(PRODUCT_SYSTEM_DEVICE) \
-    DeviceProduct=$(PRODUCT_SYSTEM_NAME)
+    DeviceProduct=$(PRODUCT_SYSTEM_NAME) \
+    RisingChipset="Snapdragon 8s Gen 3" \
+    RisingMaintainer="MrJellyXD"
 
 PRODUCT_GMS_CLIENTID_BASE := android-xiaomi
